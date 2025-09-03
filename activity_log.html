@@ -231,7 +231,7 @@
     <script>
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('activity_date').setAttribute('max', today);
-        document.getElementById('activity_date').valueAsDate = new Date();
+        document.getElementById('activity_date').valueAsDate = today();
 
         const activityTypeRadios = document.querySelectorAll('input[name="activity_type"]');
         const runWalkInputs = document.getElementById('run_walk_inputs');
@@ -275,7 +275,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.reset();
-                    document.getElementById('activity_date').valueAsDate = new Date();
+                    document.getElementById('activity_date').valueAsDate = today();
                     toggleInputs();
                 }
             });
@@ -285,3 +285,4 @@
 </body>
 
 </html>
+
