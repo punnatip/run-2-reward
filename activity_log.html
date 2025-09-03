@@ -229,6 +229,8 @@
     </div>
 
     <script>
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('activity_date').setAttribute('max', today);
         document.getElementById('activity_date').valueAsDate = new Date();
 
         const activityTypeRadios = document.querySelectorAll('input[name="activity_type"]');
@@ -281,4 +283,5 @@
     </script>
 
 </body>
+
 </html>
