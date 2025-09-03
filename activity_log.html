@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกกิจกรรม - Run2Reward</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- โค้ด CSS ส่วนอื่นๆ เหมือนเดิม --- */
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1a237e;
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            color: #546e7a;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #37474f;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cfd8dc;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #303f9f;
+        }
+        
+        .activity-chooser {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .activity-chooser input[type="radio"] {
+            display: none;
+        }
+
+        .activity-chooser label {
+            text-align: center;
+            padding: 12px;
+            border: 2px solid #cfd8dc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        .activity-chooser input[type="radio"]:checked + label {
+            background-color: #e8eaf6;
+            border-color: #3f51b5;
+            color: #3f51b5;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .feeling-selector {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .feeling-selector label {
+            cursor: pointer;
+            font-size: 2.5rem;
+            opacity: 0.5;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        .feeling-selector input[type="radio"] {
+            display: none;
+        }
+
+        .feeling-selector input[type="radio"]:checked + label {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(90deg, #3f51b5, #1a237e);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'Kanit', sans-serif;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-px);
+            box-shadow: 0 5px 15px rgba(48, 63, 159, 0.3);
+        }
+
+        /* *
+        * >>> เพิ่มโค้ดส่วนนี้เข้าไป <<< 
+        * เพื่อกำหนดฟอนต์ให้กับ SweetAlert2
+        *
+        */
+        .swal2-popup {
+            font-family: 'Kanit', sans-serif;
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Activity Log 👟</h1>
+            <p>บันทึกกิจกรรมของคุณเพื่อสะสมรางวัล!</p>
+        </div>
+        
+        <form id="activityForm">
+            <div class="form-group">
+                <label for="activity_date">วันที่</label>
+                <input type="date" id="activity_date" name="activity_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label>เลือกประเภทกิจกรรม</label>
+                <div class="activity-chooser">
+                    <input type="radio" id="type_run" name="activity_type" value="run_walk" checked>
+                    <label for="type_run">🏃 วิ่ง / เดิน</label>
+                    <input type="radio" id="type_steps" name="activity_type" value="steps">
+                    <label for="type_steps">👣 นับก้าว</label>
+                </div>
+            </div>
+
+            <div id="run_walk_inputs">
+                <div class="metrics-grid">
+                    <div class="form-group">
+                        <label for="distance">ระยะทาง (กม.)</label>
+                        <input type="number" id="distance" name="distance" placeholder="เช่น 5.2" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">เวลาที่ใช้ (นาที)</label>
+                        <input type="number" id="duration" name="duration" placeholder="เช่น 30">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="steps_input" class="hidden">
+                <div class="form-group">
+                    <label for="steps">จำนวนก้าว</label>
+                    <input type="number" id="steps" name="steps" placeholder="เช่น 10000">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>ความรู้สึก</label>
+                <div class="feeling-selector">
+                    <input type="radio" id="feeling-great" name="feeling" value="great"><label for="feeling-great">😄</label>
+                    <input type="radio" id="feeling-good" name="feeling" value="good" checked><label for="feeling-good">😊</label>
+                    <input type="radio" id="feeling-ok" name="feeling" value="ok"><label for="feeling-ok">😐</label>
+                    <input type="radio" id="feeling-tired" name="feeling" value="tired"><label for="feeling-tired">🥵</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">บันทึกเพิ่มเติม (ถ้ามี)</label>
+                <textarea id="notes" name="notes" rows="3" placeholder="เล่าเรื่องราวการออกกำลังกายของคุณ..."></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">บันทึกกิจกรรม</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('activity_date').valueAsDate = new Date();
+
+        const activityTypeRadios = document.querySelectorAll('input[name="activity_type"]');
+        const runWalkInputs = document.getElementById('run_walk_inputs');
+        const stepsInput = document.getElementById('steps_input');
+        const distanceInput = document.getElementById('distance');
+        const durationInput = document.getElementById('duration');
+        const stepsCountInput = document.getElementById('steps');
+
+        function toggleInputs() {
+            if (document.getElementById('type_run').checked) {
+                runWalkInputs.classList.remove('hidden');
+                stepsInput.classList.add('hidden');
+                distanceInput.required = true;
+                durationInput.required = true;
+                stepsCountInput.required = false;
+            } else {
+                runWalkInputs.classList.add('hidden');
+                stepsInput.classList.remove('hidden');
+                distanceInput.required = false;
+                durationInput.required = false;
+                stepsCountInput.required = true;
+            }
+        }
+
+        activityTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleInputs);
+        });
+
+        toggleInputs();
+        
+        const form = document.getElementById('activityForm');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกสำเร็จ!',
+                text: 'ข้อมูลกิจกรรมของคุณถูกบันทึกเรียบร้อยแล้ว',
+                confirmButtonText: 'ยอดเยี่ยม!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.reset();
+                    document.getElementById('activity_date').valueAsDate = new Date();
+                    toggleInputs();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
