@@ -21,11 +21,6 @@ class RewardRead(SQLModel):
     name: str
     quantity: int
 
-# --- Model ของคุณ (สมมติว่าหน้าตาแบบนี้) ---
-class Reward(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    quantity: int
 
 # --- ส่วน Lifespan และ get_db (เหมือนเดิม) ---
 def create_db_and_tables():
