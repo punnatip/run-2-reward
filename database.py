@@ -2,6 +2,7 @@
 
 import os # 👈 Import 'os' เพื่ออ่านค่า environment variables
 from sqlmodel import SQLModel, create_engine, Session
+Base = SQLModel
 
 # 1. อ่านค่า DATABASE_URL จาก Environment Variable
 # os.getenv() จะคืนค่า None ถ้าไม่พบตัวแปรนี้
@@ -12,6 +13,12 @@ database_url = os.getenv("DATABASE_URL")
 # ดังนั้นเราต้องแก้ค่านี้ก่อน
 if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
+    
+if not database_url:
+    database_url = "sqlite:///./local.db"
+    connect_args = {"check_same_thread": False}
+else:
+    connect_args = {}
 
 # 2. สร้าง Engine เพื่อเชื่อมต่อกับ Database
 # ใส่ connect_args={} ที่ว่างเปล่าไว้ก่อนเพื่อความเข้ากันได้
