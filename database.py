@@ -1,19 +1,35 @@
-# database.py
+# main.py หรือ database.py
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import os # 👈 Import 'os' เพื่ออ่านค่า environment variables
+from sqlmodel import SQLModel, create_engine, Session
 
-# 1. กำหนดที่อยู่และชื่อไฟล์ของฐานข้อมูล SQLite
-SQLALCHEMY_DATABASE_URL = "sqlite:///./reward.db"
+# 1. อ่านค่า DATABASE_URL จาก Environment Variable
+# os.getenv() จะคืนค่า None ถ้าไม่พบตัวแปรนี้
+database_url = os.getenv("DATABASE_URL")
 
-# 2. สร้าง Engine เพื่อเชื่อมต่อกับฐานข้อมูล
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+# ‼️ ข้อควรระวัง: Render ให้ URL ที่ขึ้นต้นด้วย postgres://
+# แต่ SQLAlchemy (ที่ SQLModel ใช้) ต้องการ postgresql://
+# ดังนั้นเราต้องแก้ค่านี้ก่อน
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# 3. สร้าง SessionLocal เพื่อใช้ในการติดต่อกับฐานข้อมูลในแต่ละครั้ง
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# 2. สร้าง Engine เพื่อเชื่อมต่อกับ Database
+# ใส่ connect_args={} ที่ว่างเปล่าไว้ก่อนเพื่อความเข้ากันได้
+engine = create_engine(database_url, echo=True, connect_args={})
 
-# 4. สร้าง Base class เพื่อให้ไฟล์ models ของคุณสืบทอดคุณสมบัติไปใช้
-Base = declarative_base()
+
+# ฟังก์ชันสำหรับสร้างตารางทั้งหมด (ถ้ายังไม่มี)
+def create_db_and_tables():
+    # Import model ของคุณทั้งหมดมาก่อนบรรทัดนี้
+    SQLModel.metadata.create_all(engine)
+
+
+# ฟังก์ชันสำหรับสร้าง Session เพื่อคุยกับ Database
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+# ส่วนอื่นๆ ของแอป FastAPI ของคุณ ...
+# เช่น @app.on_event("startup")
+# def on_startup():
+#     create_db_and_tables()
