@@ -85,3 +85,4 @@ def add_reward_submit(
 
     # 3. Redirect กลับไปที่หน้า activity log
     return RedirectResponse(url="/activity", status_code=303)
+

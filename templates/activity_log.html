@@ -69,6 +69,18 @@
                     <input type="number" id="steps" name="steps" placeholder="เช่น 10000">
                 </div>
             </div>
+
+            <div class="form-group">
+                <label for="activity_image">รูปภาพหลักฐาน</label>
+                <div class="image-upload-area" id="image-upload-area">
+                    <input type="file" id="activity_image" name="activity_image" accept="image/*" required>
+                    <p>คลิกเพื่อเลือกรูปภาพ หรือลากและวางที่นี่</p>
+                    <div id="image-preview-container" class="image-preview-container hidden">
+                        <img id="image-preview" class="image-preview" src="#" alt="Image Preview">
+                    </div>
+                </div>
+            </div>
+            
             <div class="form-group">
                 <label>ความรู้สึก</label>
                 <div class="feeling-selector">
@@ -116,19 +128,41 @@
             }
         }
 
-        // เพิ่ม Event Listener ให้กับปุ่มเลือกประเภทกิจกรรม
         activityTypeRadios.forEach(radio => {
             radio.addEventListener('change', toggleInputs);
         });
-
-        // เรียกใช้ฟังก์ชันนี้ 1 ครั้งตอนเปิดหน้าเว็บ เพื่อตั้งค่าเริ่มต้นให้ถูกต้อง
         toggleInputs();
 
+        // --- ส่วนจัดการอัปโหลดรูปภาพ ---
+        const imageUploadArea = document.getElementById('image-upload-area');
+        const activityImageInput = document.getElementById('activity_image');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+
+        imageUploadArea.addEventListener('click', () => {
+            activityImageInput.click();
+        });
+
+        activityImageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.src = '#';
+                imagePreviewContainer.classList.add('hidden');
+            }
+        });
         // --- ส่วนจัดการการ Submit ฟอร์ม ---
         const form = document.getElementById('activityForm');
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
+            // ตรวจสอบวันที่
             const selectedDate = document.getElementById('activity_date').value;
             if (selectedDate > today) {
                 Swal.fire({
@@ -139,6 +173,20 @@
                 });
                 return;
             }
+            // ตรวจสอบรูปภาพ
+            if (activityImageInput.files.length === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'กรุณาแนบรูปภาพ',
+                    text: 'จำเป็นต้องอัปโหลดรูปภาพเพื่อเป็นหลักฐานทุกครั้ง',
+                    confirmButtonText: 'รับทราบ'
+                });
+                return;
+            }
+
+            // ถ้าทุกอย่างถูกต้อง...
+            const formData = new FormData(form);
+            console.log('ข้อมูลฟอร์มพร้อมส่ง:', Object.fromEntries(formData));
 
             Swal.fire({
                 icon: 'success',
