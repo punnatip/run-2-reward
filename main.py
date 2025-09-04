@@ -3,32 +3,38 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
+from typing import List, Optional
+from sqlmodel import Field, SQLModel # Import เพิ่ม
 
-# Import ส่วนประกอบต่างๆ จากไฟล์อื่น
-# (ตรวจสอบให้แน่ใจว่า path ถูกต้อง เช่น .database, .models)
-from database import engine, SessionLocal
-from models import Reward, SQLModel # Import SQLModel และ Reward model ของคุณ
+# --- สร้าง Schema สำหรับ Input/Output ---
+# Schema สำหรับรับข้อมูลตอนสร้าง (ไม่มี id)
+class RewardCreate(SQLModel):
+    name: str
+    quantity: int
 
-# --- ส่วนของการสร้างตาราง ---
-# ใช้ Lifespan event แทน on_event("startup") ที่กำลังจะถูกยกเลิกในอนาคต
+# Schema สำหรับส่งข้อมูลกลับ (มี id)
+class RewardRead(SQLModel):
+    id: int
+    name: str
+    quantity: int
+
+# --- Model ของคุณ (สมมติว่าหน้าตาแบบนี้) ---
+class Reward(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    quantity: int
+
+# --- ส่วน Lifespan และ get_db (เหมือนเดิม) ---
 def create_db_and_tables():
-    print("Creating database and tables...")
     SQLModel.metadata.create_all(engine)
-    print("Database and tables created.")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Code to run on startup
     create_db_and_tables()
     yield
-    # Code to run on shutdown (ถ้ามี)
 
-# --- สร้าง FastAPI app และกำหนด Lifespan ---
 app = FastAPI(lifespan=lifespan)
 
-
-# --- Dependency สำหรับจัดการ Database Session ---
-# นี่คือ "วิธีเบิกและคืน" Session ที่ถูกต้อง
 def get_db():
     db = SessionLocal()
     try:
@@ -36,29 +42,32 @@ def get_db():
     finally:
         db.close()
 
+# --- API Endpoints ที่แก้ไขแล้ว ---
 
-# --- API Endpoints ---
-
-# Endpoint หลัก (สำหรับทดสอบว่า Server ทำงานหรือไม่)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Run2Reward API"}
 
-
-# Endpoint สำหรับสร้าง Reward (ตัวอย่าง)
-# หมายเหตุ: เราควรใช้ Pydantic/SQLModel schema สำหรับรับข้อมูล (RewardCreate)
-# และสำหรับส่งข้อมูลกลับ (RewardRead) เพื่อความปลอดภัยและเป็นระเบียบ
-@app.post("/rewards/", response_model=Reward)
-def create_reward(reward_data: Reward, db: Session = Depends(get_db)):
-    # reward_data จะเป็น instance ของ Reward ที่ FastAPI สร้างจาก JSON ที่ส่งมา
-    db.add(reward_data)
+# ใช้ RewardCreate สำหรับรับข้อมูล และ RewardRead สำหรับส่งข้อมูลกลับ
+@app.post("/rewards/", response_model=RewardRead)
+def create_reward(reward: RewardCreate, db: Session = Depends(get_db)):
+    # สร้าง instance ของ Reward model จากข้อมูลที่รับมา
+    db_reward = Reward.model_validate(reward)
+    db.add(db_reward)
     db.commit()
-    db.refresh(reward_data)
-    return reward_data
+    db.refresh(db_reward)
+    return db_reward
 
-
-# Endpoint สำหรับดึงข้อมูล Reward ทั้งหมด (ตัวอย่าง)
-@app.get("/rewards/", response_model=list[Reward])
+# ใช้ List[RewardRead] เพื่อให้แน่ใจว่าข้อมูลที่ส่งกลับมีโครงสร้างที่ถูกต้อง
+@app.get("/rewards/", response_model=List[RewardRead])
 def read_rewards(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     rewards = db.query(Reward).offset(skip).limit(limit).all()
     return rewards
+
+# (เพิ่ม) Endpoint สำหรับดึงข้อมูลรางวัลชิ้นเดียวตาม ID
+@app.get("/rewards/{reward_id}", response_model=RewardRead)
+def read_reward_by_id(reward_id: int, db: Session = Depends(get_db)):
+    reward = db.get(Reward, reward_id)
+    if not reward:
+        raise HTTPException(status_code=404, detail="Reward not found")
+    return reward
