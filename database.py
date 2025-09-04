@@ -1,8 +1,8 @@
 # main.py หรือ database.py
 
-import os # 👈 Import 'os' เพื่ออ่านค่า environment variables
-from sqlmodel import SQLModel, create_engine, Session
-Base = SQLModel
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # 1. อ่านค่า DATABASE_URL จาก Environment Variable
 # os.getenv() จะคืนค่า None ถ้าไม่พบตัวแปรนี้

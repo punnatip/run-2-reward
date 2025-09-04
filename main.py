@@ -1,88 +1,64 @@
 # main.py
 
-from fastapi import FastAPI, Depends, Request
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from fastapi import Form
-from fastapi.responses import RedirectResponse
+from contextlib import asynccontextmanager
 
-# นำเข้าส่วนประกอบต่างๆ ที่เราสร้างไว้จากไฟล์อื่น
-import models
-from database import SessionLocal, engine
+# Import ส่วนประกอบต่างๆ จากไฟล์อื่น
+# (ตรวจสอบให้แน่ใจว่า path ถูกต้อง เช่น .database, .models)
+from database import engine, SessionLocal
+from models import Reward, SQLModel # Import SQLModel และ Reward model ของคุณ
 
-# สร้างตารางในฐานข้อมูล (ถ้ายังไม่มี)
-models.Base.metadata.create_all(bind=engine)
+# --- ส่วนของการสร้างตาราง ---
+# ใช้ Lifespan event แทน on_event("startup") ที่กำลังจะถูกยกเลิกในอนาคต
+def create_db_and_tables():
+    print("Creating database and tables...")
+    SQLModel.metadata.create_all(engine)
+    print("Database and tables created.")
 
-# สร้าง instance ของ FastAPI
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Code to run on startup
+    create_db_and_tables()
+    yield
+    # Code to run on shutdown (ถ้ามี)
 
-# ตั้งค่าให้ Jinja2Templates รู้จักโฟลเดอร์ templates
-templates = Jinja2Templates(directory="templates")
+# --- สร้าง FastAPI app และกำหนด Lifespan ---
+app = FastAPI(lifespan=lifespan)
 
 
-# Dependency function สำหรับจัดการ database session
+# --- Dependency สำหรับจัดการ Database Session ---
+# นี่คือ "วิธีเบิกและคืน" Session ที่ถูกต้อง
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-        
-@app.get("/")
-def index_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-# สร้าง Route (เส้นทาง URL) สำหรับหน้า activity log
-@app.get("/activity")
-def activity_log(request: Request, db: Session = Depends(get_db)):
-    """
-    ฟังก์ชันนี้จะถูกเรียกเมื่อมีคนเข้าเว็บ http://127.0.0.1:8000/activity
-    """
-    # 1. ดึงข้อมูลทั้งหมดจากตาราง Reward
-    rewards = db.query(models.Reward).all()
-
-    # 2. ส่งข้อมูลไปแสดงผลในไฟล์ activity_log.html
-    return templates.TemplateResponse(
-        "activity_log.html",
-        {
-            "request": request,
-            "rewards": rewards  # ส่งตัวแปร rewards เข้าไปใน template
-        }
-    )
-
-# --- เพิ่มฟังก์ชันนี้เข้าไป ---
-@app.get("/add-reward")
-def add_reward_form(request: Request):
-    """
-    แสดงหน้าฟอร์มสำหรับเพิ่มของรางวัล
-    """
-    return templates.TemplateResponse("add_reward.html", {"request": request})
 
 
-# (แนะนำ) สร้าง Route สำหรับหน้าแรก ให้ redirect ไปยังหน้า activity
+# --- API Endpoints ---
+
+# Endpoint หลัก (สำหรับทดสอบว่า Server ทำงานหรือไม่)
 @app.get("/")
 def read_root():
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url="/activity")
+    return {"message": "Welcome to Run2Reward API"}
 
 
-# --- เพิ่มฟังก์ชันนี้เข้าไป ---
-@app.post("/add-reward")
-def add_reward_submit(
-    name: str = Form(...), 
-    quantity: int = Form(...), 
-    db: Session = Depends(get_db)
-):
-    """
-    รับข้อมูลจากฟอร์มแล้วบันทึกลง DB
-    """
-    # 1. สร้าง object ของรางวัลใหม่จากข้อมูลที่รับมา
-    new_reward = models.Reward(name=name, quantity=quantity)
-
-    # 2. เพิ่มข้อมูลใหม่ลงใน session และบันทึกลงฐานข้อมูล
-    db.add(new_reward)
+# Endpoint สำหรับสร้าง Reward (ตัวอย่าง)
+# หมายเหตุ: เราควรใช้ Pydantic/SQLModel schema สำหรับรับข้อมูล (RewardCreate)
+# และสำหรับส่งข้อมูลกลับ (RewardRead) เพื่อความปลอดภัยและเป็นระเบียบ
+@app.post("/rewards/", response_model=Reward)
+def create_reward(reward_data: Reward, db: Session = Depends(get_db)):
+    # reward_data จะเป็น instance ของ Reward ที่ FastAPI สร้างจาก JSON ที่ส่งมา
+    db.add(reward_data)
     db.commit()
+    db.refresh(reward_data)
+    return reward_data
 
-    # 3. Redirect กลับไปที่หน้า activity log
-    return RedirectResponse(url="/activity", status_code=303)
 
+# Endpoint สำหรับดึงข้อมูล Reward ทั้งหมด (ตัวอย่าง)
+@app.get("/rewards/", response_model=list[Reward])
+def read_rewards(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    rewards = db.query(Reward).offset(skip).limit(limit).all()
+    return rewards
