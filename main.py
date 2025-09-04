@@ -7,6 +7,7 @@ from typing import List, Optional
 from sqlmodel import Field, SQLModel # Import เพิ่ม
 from database import engine, SessionLocal # <--- คุณอาจจะมีบรรทัดนี้อยู่
 from models import Reward, SQLModel
+from schemas import RewardCreate, RewardRead 
 
 # --- สร้าง Schema สำหรับ Input/Output ---
 # Schema สำหรับรับข้อมูลตอนสร้าง (ไม่มี id)
