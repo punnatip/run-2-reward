@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ - Run2Reward</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #3f51b5;
+            --text-color: #37474f;
+            --light-gray-color: #cfd8dc;
+            --background-color: #f0f4f8;
+            --white-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        /* --- โค้ดส่วนอื่นๆ เหมือนเดิม --- */
+        .profile-header { background-color: var(--white-color); border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
+        .edit-profile-btn { position: absolute; top: 20px; right: 20px; background-color: var(--background-color); color: var(--text-color); border: none; border-radius: 50px; padding: 8px 15px; font-size: 0.9rem; font-family: 'Kanit', sans-serif; cursor: pointer; transition: background-color 0.3s; }
+        .edit-profile-btn:hover { background-color: #e0e0e0; }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--secondary-color); margin-bottom: 15px; object-fit: cover; }
+        .profile-header h1 { margin: 0; font-size: 2rem; color: var(--primary-color); }
+        .profile-header p { margin: 5px 0 0; color: #78909c; }
+        .progress-section { background-color: var(--white-color); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .progress-bar-container { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .progress-bar-container::-webkit-scrollbar { display: none; }
+        .progress-bar-wrapper { display: flex; width: 200%; }
+        .progress-bar-slide { width: 50%; flex-shrink: 0; padding: 0 10px; box-sizing: border-box; scroll-snap-align: center; }
+        .progress-bar-slide h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--text-color); }
+        .progress-bar { background-color: #e0e0e0; border-radius: 50px; height: 15px; overflow: hidden; margin-bottom: 8px; }
+        .progress-bar-fill { background: linear-gradient(90deg, #81c784, #4caf50); height: 100%; border-radius: 50px; }
+        .progress-bar-slide p { margin: 0; font-size: 0.9rem; color: #78909c; text-align: right; }
+        .progress-nav { text-align: center; margin-top: 15px; }
+        .dot { height: 10px; width: 10px; background-color: var(--light-gray-color); border-radius: 50%; display: inline-block; margin: 0 5px; cursor: pointer; transition: background-color 0.3s; }
+        .dot.active { background-color: var(--secondary-color); }
+        .section-title { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid var(--secondary-color); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; } /* Adjusted minmax for more cards */
+        .stat-card { background-color: var(--white-color); padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-card .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .stat-card h3 { margin: 0; font-size: 1.8rem; color: var(--primary-color); }
+        .stat-card p { margin: 0; color: #78909c; font-size: 0.9rem; }
+        .content-section { background-color: var(--white-color); padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; text-align: center; }
+        .badge { font-size: 3rem; opacity: 0.3; }
+        .badge.unlocked { opacity: 1; }
+        .badge p { margin-top: 5px; font-size: 0.8rem; }
+        .profile-footer { text-align: center; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .action-btn { background-color: transparent; border-radius: 50px; padding: 10px 30px; font-size: 1rem; font-family: 'Kanit', sans-serif; font-weight: bold; cursor: pointer; transition: all 0.3s; text-decoration: none; }
+        .logout-btn { color: #ef5350; border: 2px solid #ef5350; }
+        .logout-btn:hover { background-color: #ef5350; color: var(--white-color); }
+        .change-password-btn { color: var(--secondary-color); border: 2px solid var(--secondary-color); }
+        .change-password-btn:hover { background-color: var(--secondary-color); color: var(--white-color); }
+
+        /* --- Modal Styles --- */
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-active { display: flex; }
+        .modal-content { background-color: var(--white-color); padding: 30px; border-radius: 15px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 5px 25px rgba(0,0,0,0.2); }
+        .modal-close { position: absolute; top: 10px; right: 15px; font-size: 2rem; color: var(--light-gray-color); cursor: pointer; line-height: 1; }
+        .modal-content h2 { margin-top: 0; color: var(--primary-color); text-align: center; }
+        .modal-avatar-upload { text-align: center; margin-bottom: 20px; }
+        .modal-avatar-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--light-gray-color); cursor: pointer; }
+        .modal-avatar-upload input[type="file"] { display: none; }
+        .modal-form-group { margin-bottom: 20px; }
+        .modal-form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
+        .modal-form-group input { width: 100%; padding: 12px; border: 1px solid var(--light-gray-color); border-radius: 10px; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-btn { padding: 10px 20px; border-radius: 50px; border: none; font-family: 'Kanit', sans-serif; font-weight: bold; cursor: pointer; }
+        .modal-btn-save { background-color: var(--secondary-color); color: var(--white-color); }
+        .modal-btn-cancel { background-color: #e0e0e0; color: var(--text-color); }
+    </style>
+</head>
+<body>
+
+    <div class="profile-container">
+        <header class="profile-header">
+            <button class="edit-profile-btn" id="open-edit-modal-btn">แก้ไขโปรไฟล์</button>
+            <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Profile Avatar" class="profile-avatar" id="main-avatar">
+            <h1 id="main-username">คุณ Punnatp</h1>
+            <p>สมาชิกตั้งแต่ Sep 2025</p>
+        </header>
+
+        <main>
+            <section class="progress-section">
+                <!-- (Progress bar content unchanged) -->
+                <div class="progress-bar-container"><div class="progress-bar-wrapper"><div class="progress-bar-slide"><h3>ภารกิจรายสัปดาห์</h3><div class="progress-bar"><div class="progress-bar-fill" style="width: 75%;"></div></div><p>750 / 1000 คะแนน</p></div><div class="progress-bar-slide"><h3>ภารกิจรายเดือน</h3><div class="progress-bar"><div class="progress-bar-fill" style="width: 40%;"></div></div><p>2,000 / 5,000 คะแนน</p></div></div></div>
+                <div class="progress-nav"><span class="dot active"></span><span class="dot"></span></div>
+            </section>
+
+            <section class="content-section">
+                <h2 class="section-title">สรุปผลโดยรวม</h2>
+                <div class="stats-grid">
+                    <!-- NEW ORDER: Weight Card is now first -->
+                    <div class="stat-card">
+                        <div class="icon">⚖️</div>
+                        <h3 id="main-weight">65.5 <span style="font-size: 1rem; color: #78909c;">กก.</span></h3>
+                        <p>น้ำหนักปัจจุบัน</p>
+                    </div>
+                    <!-- Points Card is now second -->
+                    <div class="stat-card">
+                        <div class="icon">🏆</div>
+                        <h3>1,250</h3>
+                        <p>คะแนนสะสม</p>
+                    </div>
+                    <!-- Total Distance Card is now third -->
+                    <div class="stat-card">
+                        <div class="icon">🏃‍♂️</div>
+                        <h3>88.4 กม.</h3>
+                        <p>ระยะทางทั้งหมด</p>
+                    </div>
+                    <!-- Total Activities Card is now last -->
+                    <div class="stat-card">
+                        <div class="icon">🗓️</div>
+                        <h3>15</h3>
+                        <p>กิจกรรมทั้งหมด</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="content-section">
+                <!-- (Achievements content unchanged) -->
+                <h2 class="section-title">เหรียญรางวัล</h2>
+                <div class="achievements-grid"><div class="badge unlocked"><span>🏅</span><p>นักวิ่งหน้าใหม่</p></div><div class="badge unlocked"><span>🔥</span><p>สตรีค 3 วัน</p></div><div class="badge"><span>👟</span><p>ฮาล์ฟมาราธอน</p></div><div class="badge"><span>💯</span><p>ครบ 100 กม.</p></div></div>
+            </section>
+        </main>
+        
+        <footer class="profile-footer">
+            <!-- NEW: Change Password Button -->
+            <a href="/change-password.html" class="action-btn change-password-btn">เปลี่ยนรหัสผ่าน</a>
+            <button class="action-btn logout-btn">ออกจากระบบ</button>
+        </footer>
+    </div>
+
+    <!-- Edit Profile Modal (Pop-up) -->
+    <div class="modal-backdrop" id="edit-profile-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-modal-btn">&times;</span>
+            <h2>แก้ไขโปรไฟล์</h2>
+            <form id="edit-profile-form">
+                <div class="modal-avatar-upload">
+                    <label for="edit-avatar-input">
+                        <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Avatar Preview" class="modal-avatar-preview" id="modal-avatar-preview">
+                    </label>
+                    <input type="file" id="edit-avatar-input" accept="image/*">
+                </div>
+                <div class="modal-form-group">
+                    <label for="edit-display-name">ชื่อที่แสดง</label>
+                    <input type="text" id="edit-display-name" required>
+                </div>
+                <!-- NEW: Weight Input in Modal -->
+                <div class="modal-form-group">
+                    <label for="edit-weight">น้ำหนัก (กก.)</label>
+                    <input type="number" id="edit-weight" step="0.1" placeholder="เช่น 65.5">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn modal-btn-cancel" id="cancel-edit-btn">ยกเลิก</button>
+                    <button type="submit" class="modal-btn modal-btn-save">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Script for Swipeable Progress Bar (unchanged) ---
+        const progressBarContainer = document.querySelector('.progress-bar-container');
+        const slides = document.querySelectorAll('.progress-bar-slide');
+        const dots = document.querySelectorAll('.dot');
+        const updateDots = (entries) => { entries.forEach(entry => { if (entry.isIntersecting) { const index = Array.from(slides).indexOf(entry.target); dots.forEach((dot, i) => dot.classList.toggle('active', i === index)); } }); };
+        const observer = new IntersectionObserver(updateDots, { root: progressBarContainer, threshold: 0.6 });
+        slides.forEach(slide => observer.observe(slide));
+        dots.forEach((dot, index) => { dot.addEventListener('click', () => { slides[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); }); });
+
+        // --- Script for Edit Profile Modal (UPDATED) ---
+        const openModalBtn = document.getElementById('open-edit-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const editProfileModal = document.getElementById('edit-profile-modal');
+        const editProfileForm = document.getElementById('edit-profile-form');
+
+        // Main elements to update
+        const mainAvatar = document.getElementById('main-avatar');
+        const mainUsername = document.getElementById('main-username');
+        const mainWeightDisplay = document.getElementById('main-weight'); // New
+
+        // Modal form elements
+        const modalAvatarPreview = document.getElementById('modal-avatar-preview');
+        const modalAvatarInput = document.getElementById('edit-avatar-input');
+        const modalUsernameInput = document.getElementById('edit-display-name');
+        const modalWeightInput = document.getElementById('edit-weight'); // New
+
+        // Function to open the modal
+        const openModal = () => {
+            modalUsernameInput.value = mainUsername.textContent;
+            modalAvatarPreview.src = mainAvatar.src;
+            // Extract just the number from the weight display
+            modalWeightInput.value = parseFloat(mainWeightDisplay.textContent) || '';
+            modalAvatarInput.value = '';
+            editProfileModal.classList.add('modal-active');
+        };
+
+        // Function to close the modal
+        const closeModal = () => {
+            editProfileModal.classList.remove('modal-active');
+        };
+
+        // Event listeners to open/close modal
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelEditBtn.addEventListener('click', closeModal);
+        editProfileModal.addEventListener('click', (event) => {
+            if (event.target === editProfileModal) {
+                closeModal();
+            }
+        });
+
+        // Event listener for avatar preview
+        modalAvatarInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => { modalAvatarPreview.src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Event listener for form submission
+        editProfileForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            // Update main page with new data
+            mainUsername.textContent = modalUsernameInput.value;
+            if (modalAvatarInput.files.length > 0) {
+                 mainAvatar.src = modalAvatarPreview.src;
+            }
+            if (modalWeightInput.value) {
+                mainWeightDisplay.innerHTML = `${modalWeightInput.value} <span style="font-size: 1rem; color: #78909c;">กก.</span>`;
+            } else {
+                mainWeightDisplay.innerHTML = `- <span style="font-size: 1rem; color: #78909c;">กก.</span>`;
+            }
+
+            // Close the modal first
+            closeModal();
+
+            // NEW: Show a success toast notification
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'บันทึกข้อมูลสำเร็จแล้ว',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

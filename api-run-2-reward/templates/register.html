@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R2R - Regis</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            color: #1a237e;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .auth-header p {
+            color: #546e7a;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #37474f;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cfd8dc;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+            font-size: 1rem;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-group .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #78909c;
+            font-size: 1.2rem;
+        }
+        
+        .auth-button {
+            background: linear-gradient(90deg, #3f51b5, #1a237e);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #90a4ae;
+            margin: 30px 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #cfd8dc;
+        }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+        .social-login-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #cfd8dc;
+            background-color: #fff;
+            margin-bottom: 15px;
+        }
+        .social-login-btn img {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+        }
+
+        .switch-auth {
+            margin-top: 30px;
+            color: #546e7a;
+        }
+        .switch-auth a {
+            color: #3f51b5;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>สร้างบัญชีของคุณ 👋</h1>
+            <p>เริ่มสะสมรางวัลจากการวิ่งได้แล้ววันนี้!</p>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">อีเมล</label>
+                <input type="email" id="email" placeholder="you@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">รหัสผ่าน</label>
+                <div class="password-group">
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <span class="toggle-password">👁️</span>
+                </div>
+                <label for="password">ยืนยันรหัสผ่าน</label>
+                <div class="password-group">
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <span class="toggle-password">👁️</span>
+                </div>
+            </div>
+            <button type="submit" class="auth-button">สมัครสมาชิก</button>
+        </form>
+
+        <div class="divider">หรือเข้าสู่ระบบด้วย</div>
+        
+        <div>
+            <button class="social-login-btn">
+                <img src="https://www.google.com/s2/favicons?domain=google.com" alt="Google">
+                <span>ดำเนินการต่อด้วย Google</span>
+            </button>
+            </div>
+
+        <div class="switch-auth">
+            <p>มีบัญชีอยู่แล้ว? <a href="login.html">เข้าสู่ระบบที่นี่</a></p>
+        </div>
+    </div>
+
+    <script>
+        const togglePassword = document.querySelector('.toggle-password');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            // เปลี่ยน icon ตา (ถ้าต้องการ)
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    </script>
+</body>
+</html>
